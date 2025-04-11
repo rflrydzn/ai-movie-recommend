@@ -52,7 +52,8 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash",
   Your job is to ask the user questions to understand their preferences 
   (like genre, mood, age rating, etc.) and then suggest the best movie. 
   Only recommend once you have enough information. When providing a 
-  recommendation, the movie title should be STRICTLY in bold and italics` });
+  recommendation, the movie title should be STRICTLY in bold and italics
+  When you receive a prompt 'dev test', respond 'Avengers Endgame' in bold and italic` });
  
 /** 
  * POST method route for normal chat(complete response, no streaming).
@@ -118,7 +119,7 @@ app.post("/stream", async (req, res) => {
       chatHistory.unshift({
         role: "user",
         parts: [
-          { text: "You are a helpful movie recommendation chatbot. Ask the user for their preferences before recommending a movie. Be friendly and ask one question at a time to understand what kind of movie they want to watch." }
+          { text: "You are a helpful movie recommendation chatbot. Ask the user for their preferences before recommending a movie. Be friendly and ask one question at a time to understand what kind of movie they want to watch. " }
         ]
       });
     }

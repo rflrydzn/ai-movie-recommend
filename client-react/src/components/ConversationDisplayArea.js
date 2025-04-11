@@ -6,30 +6,27 @@ import chatbotIcon from '../assets/user-icon.png'
 
 const ChatArea = ({ data, streamdiv, answer }) => {
   return (
-    <div className="chat-area">
+    <div className="">
       {data?.length <= 0 ? (
         <div className="welcome-area">
           <p className="welcome-1">Hi,</p>
           <p className="welcome-2">How can I help you today?</p>
         </div>
       ) : (
-        <div className="welcome-area" style={{display: "none"}}></div>
+        <div className="" style={{display: "none"}}></div>
       )}
 
       {data.map((element, index) => (
         <div key={index} className={element.role}>
-          <img 
-            src={element.role === "user" ? userIcon : chatbotIcon} 
-            alt="Icon" 
-          />
-          <p><Markdown children={element.parts[0].text} /></p>
+          
+          <p className=''><Markdown children={element.parts[0].text} /></p>
         </div>
       ))}
 
       {streamdiv && (
-        <div className="tempResponse">
-          <img src={chatbotIcon} alt="Icon" />
-          {answer && <p><Markdown children={answer} /></p>}
+        <div className="text-end bg-amber-800">
+          
+          {answer && <p className='text-end bg-amber-800'><Markdown children={answer} /></p>}
         </div>
       )}
 

@@ -30,6 +30,8 @@ import {
 import ConversationDisplayArea from './components/ConversationDisplayArea.js';
 import Header from './components/Header.js';
 import MessageInput from './components/MessageInput.js';
+import ReactPlayer from 'react-player/youtube'
+import spiderman from './assets/postersample.jpg'
 
 const queryClient = new QueryClient()
 
@@ -41,7 +43,8 @@ function extractTitleFromResponse(text) {
   const match = text.match(/(?:\*\*\*|\*\*|\*|___|__|_)(.+?)(?:\*\*\*|\*\*|\*|___|__|_)/);
   return match ? match[1] : null;
 }
-  const [title, setTitle] = useState("")
+  const [title, setTitle] = useState("Now You See Me")
+  const [trailer, setTrailer] = useState("")
   const [movieDetails, setMovieDetails] = useState('')
   const [movieInfo, setMovieInfo] = useState({
     title: "",
@@ -342,6 +345,21 @@ const { data: movieInfoData } = useQuery({
   enabled: !!movieID
 });
 
+const { data: movieTrailer } = useQuery({
+  queryKey: ['movieTrailer', movieID],
+  queryFn: async () => {
+    if (!movieID) return null;
+    const res = await fetch(`https://api.kinocheck.com/movies?imdb_id=${movieID}`);
+    const trailerID =  await res.json();
+    const trailerInfo = {url: trailerID.trailer.youtube_video_id,
+      thumbnail: trailerID.trailer.youtube_thumbnail
+    }
+    return trailerInfo;
+    
+  },
+  enabled: !!movieID
+});
+
 useEffect(() => {
   if (movieInfoData) {
     setMovieInfo({
@@ -358,31 +376,43 @@ useEffect(() => {
     });
   }
 }, [movieInfoData]);
+console.log(movieTrailer)
 
+const words = movieInfo.genre.split(',').map(word => word.trim());
+const samplegenre = ["action", "comedy", "horror"]
   return (
     <div className='flex'>
-      <div className='w-[50%] border-2'>
+      <div className='w-[50%] border-2 p-5 bg-gradient-to-b from-[#0f0f0f] to-[#1a2238] text-white' style={{fontFamily: 'Verdana'}}>
         <div>
-          <h1>{title}</h1>
-          <p>{movieInfo.year} - {movieInfo.rated} - {movieInfo.runtime}</p>
+          <h1 className='text-[2rem]' style={{fontFamily: 'Helvetica Neue'}}>{title || 'SPIDERMAN2'}</h1>
+          <p className='mb-1'>{movieInfo.year || '2025'} - {movieInfo.rated || 'PG'} - {movieInfo.runtime || '127m'}</p>
         </div>
 
-        <div>
-          <img src={movieInfo.poster}></img>
-          <img src='' alt='trailer'></img>
+        <div className='flex gap-2'>
+          <img src={movieInfo.poster || spiderman} className='w-1/4 rounded-xl'></img>
+          <div className='w-3/4 rounded-xl overflow-hidden'><ReactPlayer 
+          url={`https://www.youtube.com/watch?v=${movieTrailer?.url || 'LXb3EKWsInQ'}`}
+          width='100%'
+          height='100%'
+          light={movieTrailer?.thumbnail || ''}/></div>
+          
         </div>
         
-        <div>
-          <button>{movieInfo.genre}</button>
+        <div className='flex justify-start my-3 gap-4'>
+          {words.map(gen => (
+            <ul>
+              <li className='border rounded-xl px-2'>{gen}</li>
+            </ul>
+          ))}
         </div>
-        <p>{movieInfo.plot}</p>
-        <p>Rating - {movieInfo.imdbrating}</p>
+        <p>{movieInfo.plot || "Peter Parker is beset with troubles in his failing personal life as he battles a former brilliant scientist named Otto Octavius."}</p>
+        <p className='my-3'>⭐ {movieInfo.ratings || 7}/10</p>
         <hr />
-        <p>Director: {movieInfo.director} </p>
+        <p className='my-2'>Directors: {movieInfo.director} </p>
         <hr />
-        <p>Writers: {movieInfo.writers}</p>
+        <p className='my-2'>Writers: {movieInfo.writers}</p>
         <hr />
-        <p>Actors: {movieInfo.actors}</p>
+        <p className='my-2'>Actors: {movieInfo.actors}</p>
       </div>
       <div className='w-[50%] border-2'>
       <center>
@@ -392,6 +422,7 @@ useEffect(() => {
           <MessageInput inputRef={inputRef} waiting={waiting} handleClick={handleClick} />
           title: {title}
           id: {movieID}
+          ytid: {movieTrailer?.url}
           {movieDetails.Response ? (
             <p>{movieDetails.Search[0].Year}</p>
           ): null}
