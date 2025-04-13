@@ -32,6 +32,7 @@ import Header from './components/Header.js';
 import MessageInput from './components/MessageInput.js';
 import ReactPlayer from 'react-player/youtube'
 import spiderman from './assets/postersample.jpg'
+import robot from './assets/robot.png'
 
 const queryClient = new QueryClient()
 
@@ -106,6 +107,14 @@ function extractTitleFromResponse(text) {
 
   /** Handle form submission. */
   const handleClick = () => {
+    let inputText = inputRef.current.value;
+
+    // If empty, simulate a default message
+    if (validationCheck(inputText)) {
+      inputText = "Introduce yourself";
+      inputRef.current.value = inputText; // Set it in the input so the rest of the logic works
+    }
+
     if (validationCheck(inputRef.current.value)) {
       console.log("Empty or invalid entry");
     } else {
@@ -289,38 +298,6 @@ console.log("Extracted Title:", extractedTitle);
     fetchStreamData();
   };
 
-  // useEffect(() => {
-  //   async function fetchMovie() {
-  //     if (title != null) {
-  //       try {
-  //         const res = await fetch(`https://www.omdbapi.com/?s=${title}&apikey=b9465903`);
-  //         const moviedata = await res.json();
-  //           if (moviedata.Search && moviedata.Search.length > 0) {
-  //             console.log("movie data:", moviedata); // or store it in state
-  //             setMovieID(moviedata.Search[0].imdbID)
-  //           }
-          
-  //       } catch (err) {
-  //         console.error("Error fetching movie data:", err);
-  //       }
-  //       console.log("id", movieID)
-  //       const resdetails = await fetch(`https://www.omdbapi.com/?i=${movieID}&plot=full&apikey=b9465903`)
-  //       const movieinfo = await resdetails.json()
-  //       setMovieInfo({
-  //         poster: movieinfo.Poster, 
-  //         genre: movieinfo.Genre,
-  //         plot: movieinfo.Plot,
-  //         year: movieinfo.Year,
-  //         runtime: movieinfo.Runtime,
-  //       })
-  //       console.log("info", movieinfo)
-  //     }
-      
-  //   }
-  
-  //   fetchMovie();
-  // }, [title]);
-
   // 1. Search for movie ID by title
 const { data: searchData } = useQuery({
   queryKey: ['movieSearch', title],
@@ -414,20 +391,34 @@ const samplegenre = ["action", "comedy", "horror"]
         <hr />
         <p className='my-2'>Actors: {movieInfo.actors}</p>
       </div>
-      <div className='w-[50%] border-2'>
-      <center>
+      <div className='w-[50%] border-2 bg-gradient-to-b from-[#0f0f0f] to-[#1a2238] text-white'>
+          {data?.length <= 0 ? (
+            <div>
+          
+            <div className="welcome-area">
+              <p className="welcome-1">Hi,</p>
+              <p className="welcome-2">Let's find your perfect movie</p>
+            </div>
+          
+                <img src={robot} width={300}></img>
+                <button className='border-solid border-2' onClick={handleClick} inputRef={inputRef}>Start</button>
+                
+              </div>
+          ) : (null)}
+          
         <div className="chat-app">
-          <Header toggled={toggled} setToggled={setToggled} />
+          
+          {/* <Header toggled={toggled} setToggled={setToggled} /> */}
           <ConversationDisplayArea data={data} streamdiv={streamdiv} answer={answer} />
-          <MessageInput inputRef={inputRef} waiting={waiting} handleClick={handleClick} />
-          title: {title}
+          <div className={data?.length <= 0 ? 'hidden' : ''}><MessageInput inputRef={inputRef} waiting={waiting} handleClick={handleClick} /></div>
+          {/* title: {title}
           id: {movieID}
           ytid: {movieTrailer?.url}
           {movieDetails.Response ? (
             <p>{movieDetails.Search[0].Year}</p>
-          ): null}
+          ): null} */}
         </div>
-      </center>
+      
       </div>
       
     </div>
