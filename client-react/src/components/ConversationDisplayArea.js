@@ -3,9 +3,15 @@ import Markdown from 'react-markdown';
 import userIcon from '../assets/user-icon.png';
 // TODO: Consider replacing chatbotIcon with its own distinct icon.
 import chatbotIcon from '../assets/user-icon.png'
+import robot from '../assets/popcornn.png'
+import bulb from '../assets/bulbb.png'
+import book from '../assets/bookk.png'
+import suggest from '../assets/suggestt.png'
 
-const ChatArea = ({ data, streamdiv, answer }) => {
-  
+
+const ChatArea = ({ suggested, waiting, data, streamdiv, answer }) => {
+  const lastModelMessage = [...data].reverse().find(item => item.role === 'model');
+  console.log('message',lastModelMessage)
   return (
     <div className="">
       {/* {data?.length <= 0 ? (
@@ -17,13 +23,16 @@ const ChatArea = ({ data, streamdiv, answer }) => {
         <div className="" style={{display: "none"}}></div>
       )} */}
 
-      {data.map((element, index) => (
-        
-        <div key={index} className={element.role}>
+{lastModelMessage && (
+        <div className={lastModelMessage.role}>
+          <div className='flex items-center  '>
           
-            {index == 0 ? null : <p className={`text-${index % 2 === 0 ? 'end' : 'start'}`}> <Markdown children={element.parts[0].text} /></p> }
+          {suggested ? <img src={suggest} width={300} /> : <img src={waiting ? book : bulb} width={300}></img> }
+          <p><Markdown children={lastModelMessage.parts[0].text} /></p>
+          </div>
         </div>
-      ))}
+      )}
+
 
       {streamdiv && (
         <div className="text-end bg-amber-800">

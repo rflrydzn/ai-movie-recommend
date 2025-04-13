@@ -23,9 +23,9 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 /** Submission using the Enter key or button. */
 const MessageInput = ({ inputRef, waiting, handleClick }) => {
   return (
-    <div className="message-input">
+    <div className="">
       <input
-        className="chat_msg_input"
+        className="p-5 pr-20 rounded-2xl border-white border text-left"
         type="text"
         name="chat"
         placeholder="Enter a message."
@@ -35,11 +35,11 @@ const MessageInput = ({ inputRef, waiting, handleClick }) => {
           if (e.key === "Enter") handleClick();
         }}
       />
-      <button className="chat_msg_btn" onClick={handleClick}>
+      {/* <button className="" onClick={handleClick}>
         <span className="fa-span-send">
           <FontAwesomeIcon icon={faPaperPlane} />
         </span>
-      </button>
+      </button> */}
     </div>
   );
 };
