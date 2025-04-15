@@ -21,11 +21,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 /** Submission using the Enter key or button. */
-const MessageInput = ({ inputRef, waiting, handleClick }) => {
-  return (
+const MessageInput = ({ isSuggested, inputRef, waiting, handleClick }) => {
+  return !isSuggested && (
     <div className="">
       <input
-        className="p-5 pr-20 rounded-2xl border-white border text-left"
+        className="p-5 w-96 pr-40 rounded-2xl border-white border text-left text"
         type="text"
         name="chat"
         placeholder="Enter a message."

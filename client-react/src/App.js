@@ -39,10 +39,12 @@ const queryClient = new QueryClient()
 
 function AppContent() {
   
-  
+  const [isSuggested, setIsSuggested] = useState(false)
   
 function extractTitleFromResponse(text) {
   const match = text.match(/(?:\*\*\*|\*\*|\*|___|__|_)(.+?)(?:\*\*\*|\*\*|\*|___|__|_)/);
+  
+  
   return match ? match[1] : null;
 }
   const [title, setTitle] = useState("")
@@ -66,6 +68,8 @@ function extractTitleFromResponse(text) {
     imdbrating: "",
 
   })
+  const [isSorry, setIsSorry] = useState("")
+  const [trailerInfo, setTrailerInfo] = useState({url: "", thumbnail: "", id: ""})
   /** Reference variable for message input button. */
   const inputRef = useRef();
   /** Host URL */
@@ -107,15 +111,15 @@ function extractTitleFromResponse(text) {
   }
 
   /** Handle form submission. */
-  const handleClick = () => {
-    let inputText = inputRef.current.value;
+  const handleClick = (val) => {
+    let inputText = inputRef.current.value ;
 
     // If empty, simulate a default message
     if (validationCheck(inputText)) {
       inputText = "Introduce yourself";
       inputRef.current.value = inputText; // Set it in the input so the rest of the logic works
     }
-
+    
     if (validationCheck(inputRef.current.value)) {
       console.log("Empty or invalid entry");
     } else {
@@ -130,10 +134,10 @@ function extractTitleFromResponse(text) {
   };
 
   /** Handle non-streaming chat. */
-  const handleNonStreamingChat = async () => {
+  const handleNonStreamingChat = async (val) => {
     /** Prepare POST request data. */
     const chatData = {
-      chat: inputRef.current.value,
+      chat: val || inputRef.current.value,
       history: data
     };
 
@@ -173,6 +177,9 @@ function extractTitleFromResponse(text) {
         const extractedTitle = extractTitleFromResponse(modelResponse);
 console.log("Extracted Title:", extractedTitle);
         setTitle(extractedTitle)
+        const matchSorry = /sorry/i.test(modelResponse)
+        setIsSorry(matchSorry)
+
         
       } catch (error) {
         modelResponse = "Error occurred";
@@ -305,11 +312,13 @@ const { data: searchData } = useQuery({
   queryFn: async () => {
     if (!title) return null;
     const res = await fetch(`https://www.omdbapi.com/?s=${title}&apikey=b9465903`);
+    
     return res.json();
+    
   },
   enabled: !!title
 });
-
+console.log('setissuggest', isSuggested)
 // 2. Get full movie info by ID
 const movieID = searchData?.Search?.[0]?.imdbID;
 
@@ -318,19 +327,31 @@ const { data: movieInfoData } = useQuery({
   queryFn: async () => {
     if (!movieID) return null;
     const res = await fetch(`https://www.omdbapi.com/?i=${movieID}&plot=full&apikey=b9465903`);
+    
     return res.json();
   },
   enabled: !!movieID
 });
+console.log('json', searchData)
+useEffect(() => {
+  if (searchData?.Response === 'True') {
+    setIsSuggested(true);
+    console.log('new', true);
+  }
+}, [searchData]);
 
+useEffect(() => {
+  console.log('isSuggested updated:', isSuggested);
+}, [isSuggested]);
 const { data: movieTrailer } = useQuery({
   queryKey: ['movieTrailer', movieID],
   queryFn: async () => {
     if (!movieID) return null;
     const res = await fetch(`https://api.kinocheck.com/movies?imdb_id=${movieID}`);
     const trailerID =  await res.json();
+    
     const trailerInfo = {url: trailerID.trailer.youtube_video_id,
-      thumbnail: trailerID.trailer.youtube_thumbnail
+      thumbnail: trailerID.trailer.youtube_thumbnail, id: trailerID.imdb_id
     }
     return trailerInfo;
     
@@ -338,10 +359,16 @@ const { data: movieTrailer } = useQuery({
   enabled: !!movieID
 });
 
+useEffect(()=> {
+  console.log('newid',movieTrailer?.id)
+  setTrailerInfo({id: movieTrailer?.id, url: movieTrailer?.url, thumbnail: movieTrailer?.thumbnail})
+}, [movieTrailer?.id])
+
 useEffect(() => {
   if (movieInfoData) {
     setMovieInfo({
       poster: movieInfoData.Poster,
+      title: movieInfoData.Title,
       genre: movieInfoData.Genre,
       plot: movieInfoData.Plot,
       year: movieInfoData.Year,
@@ -358,12 +385,12 @@ console.log(movieTrailer)
 
 const words = movieInfo.genre.split(',').map(word => word.trim());
 const featuredWords = featured.Genre.split(',').map(word => word.trim());
-const samplegenre = ["action", "comedy", "horror"]
+
   return (
     <div className='flex'>
       <div className='w-[50%]  p-5 bg-gradient-to-b from-[#0f0f0f] to-[#1a2238] text-white' style={{fontFamily: 'Verdana'}}>
         <div>
-          <h1 className='text-[2rem]' style={{fontFamily: 'Helvetica Neue'}}>{title || featured.Title}</h1>
+          <h1 className='text-[2rem]' style={{fontFamily: 'Helvetica Neue'}}>{movieInfo.title || featured.Title}</h1>
           <p className='mb-1'>{movieInfo.year || featured.Year} - {movieInfo.rated || featured.Rated} - {movieInfo.runtime || featured.Runtime}</p>
         </div>
 
@@ -373,7 +400,7 @@ const samplegenre = ["action", "comedy", "horror"]
           url={`https://www.youtube.com/watch?v=${movieTrailer?.url || featured.Trailer}`}
           width='100%'
           height='100%'
-          light={movieTrailer?.thumbnail || ''}/></div>
+          light={trailerInfo.thumbnail || ''}/></div>
           
         </div>
         
@@ -395,31 +422,36 @@ const samplegenre = ["action", "comedy", "horror"]
       </div>
       <div className='w-[50%]  bg-gradient-to-b from-[#0f0f0f] to-[#1a2238] text-white'>
           {data?.length <= 0 ? (
-            <div className=''>
+            <div className='  justify-center items-center h-screen flex'>
+              <div className='flex flex-col items-center gap-8'>
           
-            <div className="welcome-area">
+            {/* <div className="welcome-area">
               <p className="welcome-1">Hi,</p>
               <p className="welcome-2">Let's find your perfect movie</p>
-            </div>
-          
+            </div> */}
+                <div className='flex items-center w-full'>
                 <img src={robot} width={300}></img>
-                <button className='border-solid border-2' onClick={handleClick} inputRef={inputRef}>Start</button>
-                
+                <p className='text-3xl'>
+                👋 Hey there! I'm <span className="font-semibold text-yellow-300">CineMate</span> — your movie BFF bot 🍿<br />
+                Need help picking the perfect film? I got you. Let’s find your next favorite watch! 🎥<br />
+                Hit that button to get started!
+                </p>
+                </div>
+                <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-4xl cursor-pointer' onClick={handleClick} inputRef={inputRef}>Start</button>
+                </div>
               </div>
           ) : (null)}
           
         <div className="chat-app">
           
           {/* <Header toggled={toggled} setToggled={setToggled} /> */}
-          <ConversationDisplayArea suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
-          <div className={data?.length <= 0 ? 'hidden' : ''}><MessageInput inputRef={inputRef} waiting={waiting} handleClick={handleClick} /></div>
-          {/* <MessageInput inputRef={inputRef} waiting={waiting} handleClick={handleClick} /> */}
-          {/* title: {title}
-          id: {movieID}
-          ytid: {movieTrailer?.url}
-          {movieDetails.Response ? (
-            <p>{movieDetails.Search[0].Year}</p>
-          ): null} */}
+          <ConversationDisplayArea  sorry={isSorry} suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
+          <div className={data?.length <= 0 ? 'hidden' : 'absolute bottom-6 w-1/2 flex justify-center '}><MessageInput isSuggested={isSuggested} inputRef={inputRef} waiting={waiting} handleClick={handleClick} /></div> 
+          
+          {isSuggested ? <div className='text-center'>
+            <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i like it')}>ayos</button>
+            <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i dont like that')}>panget hahahha</button>
+          </div> : null}
         </div>
       
       </div>
