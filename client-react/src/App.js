@@ -116,7 +116,7 @@ function extractTitleFromResponse(text) {
 
     // If empty, simulate a default message
     if (validationCheck(inputText)) {
-      inputText = "Introduce yourself";
+      inputText = "Begin, no need to say hi/hello. ";
       inputRef.current.value = inputText; // Set it in the input so the rest of the logic works
     }
     
