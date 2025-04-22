@@ -8,10 +8,11 @@ import bulb from '../assets/bulbb.png'
 import book from '../assets/bookk.png'
 import suggest from '../assets/suggestt.png'
 import sad from '../assets/sadd.png'
+import happy from '../assets/partyy.png'
 import { useState } from 'react';
 
 
-const ChatArea = ({ sorry, response, suggested, waiting, data, streamdiv, answer, inputRef }) => {
+const ChatArea = ({ great, sorry, response, suggested, waiting, data, streamdiv, answer, inputRef }) => {
   const lastModelMessage = [...data].reverse().find(item => item.role === 'model');
   
   const [apologies, setApologies] = useState("")
@@ -21,6 +22,8 @@ const ChatArea = ({ sorry, response, suggested, waiting, data, streamdiv, answer
       return sad
     } else if (waiting) {
       return book
+    } else if (great) {
+      return happy
     } else if (suggested) {
       return suggest
     } else {
@@ -31,8 +34,7 @@ const ChatArea = ({ sorry, response, suggested, waiting, data, streamdiv, answer
   //   return /sorry/i.test(text); // 'i' makes it case-insensitive
   // };
   // console.log("chatresponse", response)
-  console.log('suggest', suggested)
-  console.log('sorry', sorry)
+
   
   
   return (
@@ -55,6 +57,7 @@ const ChatArea = ({ sorry, response, suggested, waiting, data, streamdiv, answer
           <img src={robotState()} width={300} />
           
           <p className='text-3xl'><Markdown children={lastModelMessage.parts[0].text} /></p>
+          
           </div>
           
         </div>

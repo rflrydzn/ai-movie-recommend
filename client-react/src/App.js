@@ -69,6 +69,7 @@ function extractTitleFromResponse(text) {
 
   })
   const [isSorry, setIsSorry] = useState("")
+  const [isGreat, setIsGreat] = useState("")
   const [trailerInfo, setTrailerInfo] = useState({url: "", thumbnail: "", id: ""})
   /** Reference variable for message input button. */
   const inputRef = useRef();
@@ -113,10 +114,12 @@ function extractTitleFromResponse(text) {
   /** Handle form submission. */
   const handleClick = (val) => {
     let inputText = inputRef.current.value ;
+    
 
     // If empty, simulate a default message
     if (validationCheck(inputText)) {
       inputText = "Begin, no need to say hi/hello. ";
+
       inputRef.current.value = inputText; // Set it in the input so the rest of the logic works
     }
     
@@ -140,7 +143,7 @@ function extractTitleFromResponse(text) {
       chat: val || inputRef.current.value,
       history: data
     };
-
+    
     /** Add current user message to history. */
     const ndata = [...data,
       {"role": "user", "parts":[{"text": inputRef.current.value}]}]
@@ -175,9 +178,11 @@ function extractTitleFromResponse(text) {
         modelResponse = response.data.text
         console.log(modelResponse)
         const extractedTitle = extractTitleFromResponse(modelResponse);
-console.log("Extracted Title:", extractedTitle);
+// console.log("Extracted Title:", extractedTitle);
         setTitle(extractedTitle)
         const matchSorry = /sorry/i.test(modelResponse)
+        const matchGreat = /great/i.test(modelResponse)
+        setIsGreat(matchGreat)
         setIsSorry(matchSorry)
 
         
@@ -203,7 +208,8 @@ console.log("Extracted Title:", extractedTitle);
     };
     
     fetchData();
-    
+
+
   };
 
   /** Handle streaming chat. */
@@ -318,7 +324,7 @@ const { data: searchData } = useQuery({
   },
   enabled: !!title
 });
-console.log('setissuggest', isSuggested)
+// console.log('setissuggest', isSuggested)
 // 2. Get full movie info by ID
 const movieID = searchData?.Search?.[0]?.imdbID;
 
@@ -332,17 +338,14 @@ const { data: movieInfoData } = useQuery({
   },
   enabled: !!movieID
 });
-console.log('json', searchData)
+
 useEffect(() => {
   if (searchData?.Response === 'True') {
     setIsSuggested(true);
-    console.log('new', true);
   }
 }, [searchData]);
 
-useEffect(() => {
-  console.log('isSuggested updated:', isSuggested);
-}, [isSuggested]);
+
 const { data: movieTrailer } = useQuery({
   queryKey: ['movieTrailer', movieID],
   queryFn: async () => {
@@ -360,7 +363,6 @@ const { data: movieTrailer } = useQuery({
 });
 
 useEffect(()=> {
-  console.log('newid',movieTrailer?.id)
   setTrailerInfo({id: movieTrailer?.id, url: movieTrailer?.url, thumbnail: movieTrailer?.thumbnail})
 }, [movieTrailer?.id])
 
@@ -381,7 +383,21 @@ useEffect(() => {
     });
   }
 }, [movieInfoData]);
-console.log(movieTrailer)
+
+function slugify(text) {
+  return text.toLowerCase().replace(/\s+/g, '-').replace(/[:]/g, '').trim() ;
+}
+
+
+useEffect(()=> {
+  if (isGreat) {
+    const slugged = slugify(movieInfo.title)
+    window.open(`https://www.justwatch.com/us/movie/${slugged}`, '_blank');
+    setIsSuggested(false)
+  }
+},[isGreat])
+
+console.log('happy', isGreat)
 
 const words = movieInfo.genre.split(',').map(word => word.trim());
 const featuredWords = featured.Genre.split(',').map(word => word.trim());
@@ -436,21 +452,26 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
                 Need help picking the perfect film? I got you. Let’s find your next favorite watch! 🎥<br />
                 Hit that button to get started!
                 </p>
+                
+
                 </div>
                 <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-4xl cursor-pointer' onClick={handleClick} inputRef={inputRef}>Start</button>
                 </div>
               </div>
           ) : (null)}
-          
+                    
+
         <div className="chat-app">
           
           {/* <Header toggled={toggled} setToggled={setToggled} /> */}
-          <ConversationDisplayArea  sorry={isSorry} suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
-          <div className={data?.length <= 0 ? 'hidden' : 'absolute bottom-6 w-1/2 flex justify-center '}><MessageInput isSuggested={isSuggested} inputRef={inputRef} waiting={waiting} handleClick={handleClick} /></div> 
-          
+          <ConversationDisplayArea  great={isGreat} sorry={isSorry} suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
+          <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} />
           {isSuggested ? <div className='text-center'>
-            <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i like it')}>ayos</button>
-            <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i dont like that')}>panget hahahha</button>
+            <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> {inputRef.current.value = 'i like it'; handleClick()}}>Stream on JustWatch</button>
+            <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i dont like that')}>I don't like</button>
+            <MessageInput isSuggested={isSuggested} inputRef={inputRef} waiting={waiting} handleClick={handleClick} />
+
+            
           </div> : null}
         </div>
       
