@@ -180,7 +180,7 @@ function extractTitleFromResponse(text) {
         const extractedTitle = extractTitleFromResponse(modelResponse);
 // console.log("Extracted Title:", extractedTitle);
         setTitle(extractedTitle)
-        const matchSorry = /sorry/i.test(modelResponse)
+        const matchSorry = /apologies/i.test(modelResponse)
         const matchGreat = /great/i.test(modelResponse)
         setIsGreat(matchGreat)
         setIsSorry(matchSorry)
@@ -394,8 +394,12 @@ useEffect(()=> {
     const slugged = slugify(movieInfo.title)
     window.open(`https://www.justwatch.com/us/movie/${slugged}`, '_blank');
     setIsSuggested(false)
+  } 
+
+  if (isSorry) {
+    setIsSuggested(false)
   }
-},[isGreat])
+},[isGreat, isSorry])
 
 console.log('happy', isGreat)
 
@@ -465,11 +469,14 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
           
           {/* <Header toggled={toggled} setToggled={setToggled} /> */}
           <ConversationDisplayArea  great={isGreat} sorry={isSorry} suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
-          <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} />
+          {isSuggested ? 
+            <div className='hidden'>
+                <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} /> 
+            </div>: <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} />}
           {isSuggested ? <div className='text-center'>
             <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> {inputRef.current.value = 'i like it'; handleClick()}}>Stream on JustWatch</button>
             <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i dont like that')}>I don't like</button>
-            <MessageInput isSuggested={isSuggested} inputRef={inputRef} waiting={waiting} handleClick={handleClick} />
+            {/* <MessageInput isSuggested={isSuggested} inputRef={inputRef} waiting={waiting} handleClick={handleClick} /> */}
 
             
           </div> : null}
