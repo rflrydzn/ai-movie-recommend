@@ -181,7 +181,7 @@ function extractTitleFromResponse(text) {
 // console.log("Extracted Title:", extractedTitle);
         setTitle(extractedTitle)
         const matchSorry = /apologies/i.test(modelResponse)
-        const matchGreat = /great/i.test(modelResponse)
+        const matchGreat = /Glad you liked it/i.test(modelResponse)
         setIsGreat(matchGreat)
         setIsSorry(matchSorry)
 
@@ -364,7 +364,7 @@ const { data: movieTrailer } = useQuery({
 
 useEffect(()=> {
   setTrailerInfo({id: movieTrailer?.id, url: movieTrailer?.url, thumbnail: movieTrailer?.thumbnail})
-}, [movieTrailer?.id])
+}, [movieInfo.poster])
 
 useEffect(() => {
   if (movieInfoData) {
@@ -402,6 +402,7 @@ useEffect(()=> {
 },[isGreat, isSorry])
 
 console.log('happy', isGreat)
+console.log('trailerrrrrr', movieTrailer?.url)
 
 const words = movieInfo.genre.split(',').map(word => word.trim());
 const featuredWords = featured.Genre.split(',').map(word => word.trim());
@@ -417,7 +418,7 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
         <div className='flex gap-2'>
           <img src={movieInfo.poster || featured.Poster} className='w-1/4 rounded-xl'></img>
           <div className='w-3/4 rounded-xl overflow-hidden'><ReactPlayer 
-          url={`https://www.youtube.com/watch?v=${movieTrailer?.url || featured.Trailer}`}
+          url={`https://www.youtube.com/watch?v=${trailerInfo?.url || featured.Trailer}`}
           width='100%'
           height='100%'
           light={trailerInfo.thumbnail || ''}/></div>
@@ -469,17 +470,19 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
           
           {/* <Header toggled={toggled} setToggled={setToggled} /> */}
           <ConversationDisplayArea  great={isGreat} sorry={isSorry} suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
-          {isSuggested ? 
+          {isSuggested || isGreat ? 
             <div className='hidden'>
                 <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} /> 
+                
             </div>: <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} />}
           {isSuggested ? <div className='text-center'>
             <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> {inputRef.current.value = 'i like it'; handleClick()}}>Stream on JustWatch</button>
             <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i dont like that')}>I don't like</button>
             {/* <MessageInput isSuggested={isSuggested} inputRef={inputRef} waiting={waiting} handleClick={handleClick} /> */}
-
+            
             
           </div> : null}
+          {isGreat ? <div><button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('lets try another one')}>Try another one</button></div> : null }
         </div>
       
       </div>

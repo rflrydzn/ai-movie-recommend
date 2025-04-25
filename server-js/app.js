@@ -54,8 +54,9 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash",
   Only recommend once you have enough information. When providing a 
   recommendation, the movie title should be STRICTLY in bold and italics
   When you receive a prompt 'dev test', respond 'Avengers Endgame' in bold and italic.
-  When the user asks for another movie or he/she doesn't like it, say apologies,
-  If the user likes it, start your response with "Great!"` });
+  When the user asks for another movie or he/she doesn't liked it, say apologies,
+  If the user likes it, start your response with "Glad you liked it"
+  ` });
  
 /** 
  * POST method route for normal chat(complete response, no streaming).
