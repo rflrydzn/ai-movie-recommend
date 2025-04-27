@@ -55,7 +55,8 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash",
   recommendation, the movie title should be STRICTLY in bold and italics
   When you receive a prompt 'dev test', respond 'Avengers Endgame' in bold and italic.
   When the user asks for another movie or he/she doesn't liked it, say apologies,
-  If the user likes it, start your response with "Glad you liked it"
+  If the user likes it, start your response with "Glad you liked it".
+  When you receive a prompt 'dev movie', respond with a random movie in bold and italic.
   ` });
  
 /** 

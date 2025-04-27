@@ -51,23 +51,24 @@ function extractTitleFromResponse(text) {
   const [trailer, setTrailer] = useState("")
   const [movieDetails, setMovieDetails] = useState('')
   const [movieInfo, setMovieInfo] = useState({
-    title: "",
-    year: "",
-    rated: "",
+    title: featured.Title,
+    year: featured.Year,
+    rated: featured.Rated,
     released: "",
-    runtime: "",
-    genre: "",
-    director: "",
-    writers: "",
-    actors: "",
-    plot: "",
+    runtime: featured.Runtime,
+    genre: featured.Genre,
+    director: featured.Director,
+    writers: featured.Writer,
+    actors: featured.Actors,
+    plot: featured.Plot,
     language: "",
     awards: "",
-    poster: "",
-    ratings: "",
+    poster: featured.Poster,
+    ratings: featured.imdbRating,
     imdbrating: "",
 
   })
+  const [hasStarted, setHasStarted] = useState(false)
   const [isSorry, setIsSorry] = useState("")
   const [isGreat, setIsGreat] = useState("")
   const [trailerInfo, setTrailerInfo] = useState({url: "", thumbnail: "", id: ""})
@@ -345,6 +346,9 @@ useEffect(() => {
   }
 }, [searchData]);
 
+useEffect(() => {
+  setTrailerInfo({url: "1s9Yln0YwCw"})
+}, [])
 
 const { data: movieTrailer } = useQuery({
   queryKey: ['movieTrailer', movieID],
@@ -379,7 +383,8 @@ useEffect(() => {
       director: movieInfoData.Director,
       writers: movieInfoData.Writer,
       actors: movieInfoData.Actors,
-      rated: movieInfoData.Rated
+      rated: movieInfoData.Rated,
+      ratings: movieInfoData.imdbRating
     });
   }
 }, [movieInfoData]);
@@ -405,18 +410,18 @@ console.log('happy', isGreat)
 console.log('trailerrrrrr', movieTrailer?.url)
 
 const words = movieInfo.genre.split(',').map(word => word.trim());
-const featuredWords = featured.Genre.split(',').map(word => word.trim());
+const featuredWords = movieInfo.genre.split(',').map(word => word.trim());
 
   return (
     <div className='flex'>
       <div className='w-[50%]  p-5 bg-gradient-to-b from-[#0f0f0f] to-[#1a2238] text-white' style={{fontFamily: 'Verdana'}}>
         <div>
-          <h1 className='text-[2rem]' style={{fontFamily: 'Helvetica Neue'}}>{movieInfo.title || featured.Title}</h1>
-          <p className='mb-1'>{movieInfo.year || featured.Year} - {movieInfo.rated || featured.Rated} - {movieInfo.runtime || featured.Runtime}</p>
+          <h1 className='text-[2rem]' style={{fontFamily: 'Helvetica Neue'}}>{movieInfo.title}</h1>
+          <p className='mb-1'>{movieInfo.year} - {movieInfo.rated} - {movieInfo.runtime}</p>
         </div>
 
         <div className='flex gap-2'>
-          <img src={movieInfo.poster || featured.Poster} className='w-1/4 rounded-xl'></img>
+          <img src={movieInfo.poster} className='w-1/4 rounded-xl'></img>
           <div className='w-3/4 rounded-xl overflow-hidden'><ReactPlayer 
           url={`https://www.youtube.com/watch?v=${trailerInfo?.url || featured.Trailer}`}
           width='100%'
@@ -432,14 +437,14 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
             </ul>
           ))}
         </div>
-        <p>{movieInfo.plot || featured.Plot}</p>
-        <p className='my-3'>⭐ {movieInfo.ratings || featured.imdbRating}/10</p>
+        <p>{movieInfo.plot}</p>
+        <p className='my-3'>⭐ {movieInfo.ratings}/10</p>
         <hr />
-        <p className='my-2'>Directors: {movieInfo.director || featured.Director} </p>
+        <p className='my-2'>Directors: {movieInfo.director} </p>
         <hr />
-        <p className='my-2'>Writers: {movieInfo.writers || featured.Writer}</p>
+        <p className='my-2'>Writers: {movieInfo.writers}</p>
         <hr />
-        <p className='my-2'>Actors: {movieInfo.actors || featured.Actors}</p>
+        <p className='my-2'>Actors: {movieInfo.actors}</p>
       </div>
       <div className='w-[50%]  bg-gradient-to-b from-[#0f0f0f] to-[#1a2238] text-white'>
           {data?.length <= 0 ? (
@@ -460,7 +465,7 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
                 
 
                 </div>
-                <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-4xl cursor-pointer' onClick={handleClick} inputRef={inputRef}>Start</button>
+                <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-4xl cursor-pointer' onClick={() => {handleClick(); setHasStarted(true)}} inputRef={inputRef}>Start</button>
                 </div>
               </div>
           ) : (null)}
@@ -470,11 +475,11 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
           
           {/* <Header toggled={toggled} setToggled={setToggled} /> */}
           <ConversationDisplayArea  great={isGreat} sorry={isSorry} suggested={!!movieInfo.poster} waiting={waiting} data={data} streamdiv={streamdiv} answer={answer} />
-          {isSuggested || isGreat ? 
+          {isSuggested || isGreat || !hasStarted ? 
             <div className='hidden'>
                 <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} /> 
                 
-            </div>: <MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} />}
+            </div>: <div className='text-center'><MessageInput  inputRef={inputRef} waiting={waiting} handleClick={handleClick} /></div>}
           {isSuggested ? <div className='text-center'>
             <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> {inputRef.current.value = 'i like it'; handleClick()}}>Stream on JustWatch</button>
             <button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('i dont like that')}>I don't like</button>
@@ -482,7 +487,7 @@ const featuredWords = featured.Genre.split(',').map(word => word.trim());
             
             
           </div> : null}
-          {isGreat ? <div><button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('lets try another one')}>Try another one</button></div> : null }
+          {isGreat ? <div><button className='border-solid border-2 border-white p-2 px-10 rounded-3xl text-2xl cursor-pointer m-4' onClick={()=> handleNonStreamingChat('reset')}>Try another one</button></div> : null }
         </div>
       
       </div>
